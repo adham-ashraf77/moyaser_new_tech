@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'package:moyasar/moyasar.dart';
+import 'package:moyasar/src/models/ui/credit_button_style.dart';
 import 'package:moyasar/src/moyasar.dart';
 
 import 'package:moyasar/src/models/card_form_model.dart';
@@ -13,17 +14,34 @@ import 'package:moyasar/src/utils/input_formatters.dart';
 import 'package:moyasar/src/widgets/network_icons.dart';
 import 'package:moyasar/src/widgets/three_d_s_webview.dart';
 
+import 'credit_button/credit_button.dart';
+
 /// The widget that shows the Credit Card form and manages the 3DS step.
 class CreditCard extends StatefulWidget {
-  const CreditCard(
-      {super.key,
-      required this.config,
-      required this.onPaymentResult,
-      this.locale = const Localization.en()});
+  const CreditCard({
+    super.key,
+    required this.config,
+    required this.onPaymentResult,
+    this.locale = const Localization.en(),
+    this.creditButtonStyle,
+    this.expiryLabelWidget,
+    this.cvcLabelWidget,
+    this.nameOnCardDecoration,
+    this.cardNumberDecoration,
+    this.expiryDecoration,
+    this.cvcDecoration,
+  });
 
   final Function onPaymentResult;
   final PaymentConfig config;
   final Localization locale;
+  final CreditButtonStyle? creditButtonStyle;
+  final Widget? expiryLabelWidget;
+  final Widget? cvcLabelWidget;
+  final InputDecoration? nameOnCardDecoration;
+  final InputDecoration? cardNumberDecoration;
+  final InputDecoration? expiryDecoration;
+  final InputDecoration? cvcDecoration;
 
   @override
   State<CreditCard> createState() => _CreditCardState();
@@ -65,9 +83,10 @@ class _CreditCardState extends State<CreditCard> {
     _formKey.currentState?.save();
 
     final source = CardPaymentRequestSource(
-        creditCardData: _cardData,
-        tokenizeCard: _tokenizeCard,
-        manualPayment: _manualPayment);
+      creditCardData: _cardData,
+      tokenizeCard: _tokenizeCard,
+      manualPayment: _manualPayment,
+    );
     final paymentRequest = PaymentRequest(widget.config, source);
 
     setState(() => _isSubmitting = true);
@@ -91,23 +110,24 @@ class _CreditCardState extends State<CreditCard> {
       Navigator.push(
         context,
         MaterialPageRoute(
-            fullscreenDialog: true,
-            maintainState: false,
-            builder: (context) => ThreeDSWebView(
-                transactionUrl: transactionUrl,
-                on3dsDone: (String status, String message) async {
-                  if (status == PaymentStatus.paid.name) {
-                    result.status = PaymentStatus.paid;
-                  } else if (status == PaymentStatus.authorized.name) {
-                    result.status = PaymentStatus.authorized;
-                  } else {
-                    result.status = PaymentStatus.failed;
-                    (result.source as CardPaymentResponseSource).message =
-                        message;
-                  }
-                  Navigator.pop(context);
-                  widget.onPaymentResult(result);
-                })),
+          fullscreenDialog: true,
+          maintainState: false,
+          builder: (context) => ThreeDSWebView(
+            transactionUrl: transactionUrl,
+            on3dsDone: (String status, String message) async {
+              if (status == PaymentStatus.paid.name) {
+                result.status = PaymentStatus.paid;
+              } else if (status == PaymentStatus.authorized.name) {
+                result.status = PaymentStatus.authorized;
+              } else {
+                result.status = PaymentStatus.failed;
+                (result.source as CardPaymentResponseSource).message = message;
+              }
+              Navigator.pop(context);
+              widget.onPaymentResult(result);
+            },
+          ),
+        ),
       );
     }
   }
@@ -120,19 +140,24 @@ class _CreditCardState extends State<CreditCard> {
       child: Column(
         children: [
           CardFormField(
-              inputDecoration: buildInputDecoration(
-                hintText: widget.locale.nameOnCard,
-              ),
-              keyboardType: TextInputType.text,
-              validator: (String? input) =>
-                  CardUtils.validateName(input, widget.locale),
-              onSaved: (value) => _cardData.name = value ?? '',
-              inputFormatters: [
-                FilteringTextInputFormatter.allow(RegExp('[a-zA-Z. ]')),
-              ]),
+            inputDecoration: widget.nameOnCardDecoration ??
+                _buildInputDecoration(
+                  hintText: widget.locale.nameOnCard,
+                ),
+            keyboardType: TextInputType.text,
+            validator: (String? input) =>
+                CardUtils.validateName(input, widget.locale),
+            onSaved: (value) => _cardData.name = value ?? '',
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp('[a-zA-Z. ]')),
+            ],
+          ),
           CardFormField(
-            inputDecoration: buildInputDecoration(
-                hintText: widget.locale.cardNumber, addNetworkIcons: true),
+            inputDecoration: widget.cardNumberDecoration ??
+                _buildInputDecoration(
+                  hintText: widget.locale.cardNumber,
+                  addNetworkIcons: true,
+                ),
             validator: (String? input) =>
                 CardUtils.validateCardNum(input, widget.locale),
             inputFormatters: [
@@ -143,57 +168,103 @@ class _CreditCardState extends State<CreditCard> {
             onSaved: (value) =>
                 _cardData.number = CardUtils.getCleanedNumber(value!),
           ),
-          CardFormField(
-            inputDecoration: buildInputDecoration(
-              hintText: '${widget.locale.expiry} (MM / YY)',
-            ),
-            inputFormatters: [
-              FilteringTextInputFormatter.digitsOnly,
-              LengthLimitingTextInputFormatter(4),
-              CardMonthInputFormatter(),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  children: [
+                    if (widget.expiryLabelWidget != null)
+                      widget.expiryLabelWidget!,
+                    const SizedBox(
+                      height: 8.0,
+                    ),
+                    CardFormField(
+                      inputDecoration: widget.expiryDecoration ??
+                          _buildInputDecoration(
+                            hintText: '${widget.locale.expiry} (MM / YY)',
+                          ),
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        LengthLimitingTextInputFormatter(4),
+                        CardMonthInputFormatter(),
+                      ],
+                      validator: (String? input) =>
+                          CardUtils.validateDate(input, widget.locale),
+                      onSaved: (value) {
+                        List<String> expireDate =
+                            CardUtils.getExpiryDate(value!);
+                        _cardData.month = expireDate.first;
+                        _cardData.year = expireDate[1];
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(
+                width: 16.0,
+              ),
+              Expanded(
+                child: Column(
+                  children: [
+                    if (widget.cvcLabelWidget != null) widget.cvcLabelWidget!,
+                    const SizedBox(
+                      height: 8.0,
+                    ),
+                    CardFormField(
+                      inputDecoration: widget.cvcDecoration ??
+                          _buildInputDecoration(
+                            hintText: widget.locale.cvc,
+                          ),
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        LengthLimitingTextInputFormatter(4),
+                      ],
+                      validator: (String? input) =>
+                          CardUtils.validateCVC(input, widget.locale),
+                      onSaved: (value) => _cardData.cvc = value ?? '',
+                    ),
+                  ],
+                ),
+              ),
             ],
-            validator: (String? input) =>
-                CardUtils.validateDate(input, widget.locale),
-            onSaved: (value) {
-              List<String> expireDate = CardUtils.getExpiryDate(value!);
-              _cardData.month = expireDate.first;
-              _cardData.year = expireDate[1];
-            },
-          ),
-          CardFormField(
-            inputDecoration: buildInputDecoration(
-              hintText: widget.locale.cvc,
-            ),
-            inputFormatters: [
-              FilteringTextInputFormatter.digitsOnly,
-              LengthLimitingTextInputFormatter(4),
-            ],
-            validator: (String? input) =>
-                CardUtils.validateCVC(input, widget.locale),
-            onSaved: (value) => _cardData.cvc = value ?? '',
           ),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8.0),
             child: SizedBox(
-              child: ElevatedButton(
-                style: ButtonStyle(
-                  minimumSize:
-                      const MaterialStatePropertyAll<Size>(Size.fromHeight(55)),
-                  backgroundColor: MaterialStatePropertyAll<Color>(blueColor),
-                ),
+              child: CreditCardButton(
+                buttonStyle: widget.creditButtonStyle,
                 onPressed: _isSubmitting ? () {} : _saveForm,
                 child: _isSubmitting
                     ? const CircularProgressIndicator(
                         color: Colors.white,
                         strokeWidth: 2,
                       )
-                    : Text(showAmount(widget.config.amount, widget.locale)),
+                    : Text(
+                        _showAmount(widget.config.amount, widget.locale),
+                        style: widget.creditButtonStyle?.textStyle,
+                      ),
               ),
             ),
           ),
           SaveCardNotice(tokenizeCard: _tokenizeCard, locale: widget.locale)
         ],
       ),
+    );
+  }
+
+  InputDecoration _buildInputDecoration({
+    required String hintText,
+    bool addNetworkIcons = false,
+  }) {
+    return InputDecoration(
+      suffixIcon: addNetworkIcons ? const NetworkIcons() : null,
+      hintText: hintText,
+      focusedErrorBorder: defaultErrorBorder,
+      enabledBorder: defaultEnabledBorder,
+      focusedBorder: defaultFocusedBorder,
+      errorBorder: defaultErrorBorder,
+      contentPadding: const EdgeInsets.all(8.0),
     );
   }
 }
@@ -254,36 +325,25 @@ class CardFormField extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: TextFormField(
-          keyboardType: keyboardType,
-          textInputAction: textInputAction,
-          decoration: inputDecoration,
-          validator: validator,
-          onSaved: onSaved,
-          inputFormatters: inputFormatters),
+        keyboardType: keyboardType,
+        textInputAction: textInputAction,
+        decoration: inputDecoration,
+        validator: validator,
+        onSaved: onSaved,
+        inputFormatters: inputFormatters,
+      ),
     );
   }
 }
 
-String showAmount(int amount, Localization locale) {
+String _showAmount(int amount, Localization locale) {
   final formattedAmount = (amount / 100).toStringAsFixed(2);
 
   if (locale.languageCode == 'en') {
-    return '${locale.pay} SAR $formattedAmount';
+    return '${locale.pay} $formattedAmount SAR';
   }
 
   return '${locale.pay} $formattedAmount ر.س';
-}
-
-InputDecoration buildInputDecoration(
-    {required String hintText, bool addNetworkIcons = false}) {
-  return InputDecoration(
-      suffixIcon: addNetworkIcons ? const NetworkIcons() : null,
-      hintText: hintText,
-      focusedErrorBorder: defaultErrorBorder,
-      enabledBorder: defaultEnabledBorder,
-      focusedBorder: defaultFocusedBorder,
-      errorBorder: defaultErrorBorder,
-      contentPadding: const EdgeInsets.all(8.0));
 }
 
 void closeKeyboard() => FocusManager.instance.primaryFocus?.unfocus();

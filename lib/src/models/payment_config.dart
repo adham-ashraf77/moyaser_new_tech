@@ -25,7 +25,7 @@ class PaymentConfig {
 
   /// The [metadata] adds searchable key/value pairs to the payment.
   /// For example `{"size": "xl"}`
-  Map<String, String>? metadata;
+  Map<String, dynamic>? metadata;
 
   /// The config required to setup Apple Pay.
   ApplePayConfig? applePay;

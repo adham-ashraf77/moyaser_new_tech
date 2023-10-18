@@ -16,10 +16,12 @@ Widget createTestableApp(
 
   return MaterialApp(
       home: Scaffold(
-          body: CreditCard(
-              locale: locale,
-              config: paymentConfig,
-              onPaymentResult: onPaymentResult)));
+    body: CreditCard(
+      locale: locale,
+      config: paymentConfig,
+      onPaymentResult: onPaymentResult,
+    ),
+  ));
 }
 
 void main() {

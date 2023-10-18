@@ -37,8 +37,7 @@ class _CoffeeShopState extends State<CoffeeShop> {
       applePay: ApplePayConfig(
           merchantId: 'merchant.mysr.fghurayri',
           label: 'Blue Coffee Beans',
-          manual: true)
-  );
+          manual: true));
 
   void onPaymentResult(result) {
     if (result is PaymentResponse) {

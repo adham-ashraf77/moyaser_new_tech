@@ -3,6 +3,8 @@ library moyasar;
 
 export 'src/widgets/credit_card.dart' show CreditCard;
 export 'src/widgets/apple_pay.dart' show ApplePay;
+export 'src/models/ui/credit_button_style.dart';
+export 'src/models/ui/apple_style.dart';
 
 export 'src/models/payment_config.dart' show PaymentConfig;
 export 'src/models/apple_pay_config.dart' show ApplePayConfig;
