@@ -173,12 +173,10 @@ class _CreditCardState extends State<CreditCard> {
             children: [
               Expanded(
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     if (widget.expiryLabelWidget != null)
                       widget.expiryLabelWidget!,
-                    const SizedBox(
-                      height: 8.0,
-                    ),
                     CardFormField(
                       inputDecoration: widget.expiryDecoration ??
                           _buildInputDecoration(
@@ -206,11 +204,9 @@ class _CreditCardState extends State<CreditCard> {
               ),
               Expanded(
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     if (widget.cvcLabelWidget != null) widget.cvcLabelWidget!,
-                    const SizedBox(
-                      height: 8.0,
-                    ),
                     CardFormField(
                       inputDecoration: widget.cvcDecoration ??
                           _buildInputDecoration(
