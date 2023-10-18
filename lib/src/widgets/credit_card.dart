@@ -226,7 +226,7 @@ class _CreditCardState extends State<CreditCard> {
             ],
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8.0),
+            padding: const EdgeInsets.only(top: 24.0),
             child: SizedBox(
               child: CreditCardButton(
                 buttonStyle: widget.creditButtonStyle,
