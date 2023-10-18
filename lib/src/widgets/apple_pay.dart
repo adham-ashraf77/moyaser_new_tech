@@ -9,12 +9,17 @@ import 'package:moyasar/src/models/sources/apple_pay/apple_pay_request_source.da
 
 /// The widget that shows the Apple Pay button.
 class ApplePay extends StatelessWidget {
-  ApplePay({super.key, required this.config, required this.onPaymentResult})
-      : assert(config.applePay != null,
+  ApplePay({
+    super.key,
+    required this.config,
+    required this.onPaymentResult,
+    this.appleStyle,
+  }) : assert(config.applePay != null,
             "Please add applePayConfig when instantiating the paymentConfig.");
 
   final PaymentConfig config;
   final Function onPaymentResult;
+  final AppleStyle? appleStyle;
 
   void onApplePayError(error) {
     onPaymentResult(PaymentCanceledError());
@@ -58,8 +63,9 @@ class ApplePay extends StatelessWidget {
       ],
       type: ApplePayButtonType.inStore,
       onPaymentResult: onApplePayResult,
-      width: MediaQuery.of(context).size.width,
-      height: 40,
+      width: appleStyle?.width ?? MediaQuery.of(context).size.width,
+      height: appleStyle?.height ?? 40,
+      style: appleStyle?.applePayButtonStyle ?? ApplePayButtonStyle.black,
       onError: onApplePayError,
       loadingIndicator: const Center(
         child: CircularProgressIndicator(),
