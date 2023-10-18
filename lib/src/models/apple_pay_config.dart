@@ -9,6 +9,9 @@ class ApplePayConfig {
   /// An option to enable the manual auth and capture
   bool manual;
 
-  ApplePayConfig(
-      {required this.merchantId, required this.label, required this.manual});
+  ApplePayConfig({
+    required this.merchantId,
+    required this.label,
+    required this.manual,
+  });
 }
