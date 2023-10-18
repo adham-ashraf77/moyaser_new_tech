@@ -16,6 +16,13 @@ import 'package:moyasar/src/widgets/three_d_s_webview.dart';
 
 import 'credit_button/credit_button.dart';
 
+typedef ButtonBuilderCallBack = Widget Function(
+  BuildContext context,
+  String payAmount,
+  bool isLoading,
+  VoidCallback onPressed,
+);
+
 /// The widget that shows the Credit Card form and manages the 3DS step.
 class CreditCard extends StatefulWidget {
   const CreditCard({
@@ -30,6 +37,7 @@ class CreditCard extends StatefulWidget {
     this.cardNumberDecoration,
     this.expiryDecoration,
     this.cvcDecoration,
+    this.creditBuilder,
   });
 
   final Function onPaymentResult;
@@ -42,6 +50,7 @@ class CreditCard extends StatefulWidget {
   final InputDecoration? cardNumberDecoration;
   final InputDecoration? expiryDecoration;
   final InputDecoration? cvcDecoration;
+  final ButtonBuilderCallBack? creditBuilder;
 
   @override
   State<CreditCard> createState() => _CreditCardState();
@@ -227,21 +236,27 @@ class _CreditCardState extends State<CreditCard> {
           ),
           Padding(
             padding: const EdgeInsets.only(top: 24.0),
-            child: SizedBox(
-              child: CreditCardButton(
-                buttonStyle: widget.creditButtonStyle,
-                onPressed: _isSubmitting ? () {} : _saveForm,
-                child: _isSubmitting
-                    ? const CircularProgressIndicator(
-                        color: Colors.white,
-                        strokeWidth: 2,
-                      )
-                    : Text(
-                        _showAmount(widget.config.amount, widget.locale),
-                        style: widget.creditButtonStyle?.textStyle,
-                      ),
-              ),
-            ),
+            child: widget.creditBuilder != null
+                ? widget.creditBuilder!(
+                    context,
+                    _showAmount(widget.config.amount, widget.locale),
+                    _isSubmitting,
+                    _saveForm)
+                : SizedBox(
+                    child: CreditCardButton(
+                      buttonStyle: widget.creditButtonStyle,
+                      onPressed: _isSubmitting ? () {} : _saveForm,
+                      child: _isSubmitting
+                          ? const CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            )
+                          : Text(
+                              _showAmount(widget.config.amount, widget.locale),
+                              style: widget.creditButtonStyle?.textStyle,
+                            ),
+                    ),
+                  ),
           ),
           SaveCardNotice(tokenizeCard: _tokenizeCard, locale: widget.locale)
         ],
@@ -266,8 +281,11 @@ class _CreditCardState extends State<CreditCard> {
 }
 
 class SaveCardNotice extends StatelessWidget {
-  const SaveCardNotice(
-      {super.key, required this.tokenizeCard, required this.locale});
+  const SaveCardNotice({
+    super.key,
+    required this.tokenizeCard,
+    required this.locale,
+  });
 
   final bool tokenizeCard;
   final Localization locale;
