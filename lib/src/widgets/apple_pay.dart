@@ -65,7 +65,8 @@ class ApplePay extends StatelessWidget {
       onPaymentResult: onApplePayResult,
       width: appleStyle?.width ?? MediaQuery.of(context).size.width,
       height: appleStyle?.height ?? 40,
-      style: appleStyle?.applePayButtonStyle ?? ApplePayButtonStyle.black,
+      style: ApplePayButtonStyle.white,
+      //style: appleStyle?.applePayButtonStyle ?? ApplePayButtonStyle.black,
       onError: onApplePayError,
       loadingIndicator: const Center(
         child: CircularProgressIndicator(),
