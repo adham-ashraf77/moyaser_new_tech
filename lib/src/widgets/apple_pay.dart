@@ -14,12 +14,14 @@ class ApplePay extends StatelessWidget {
     required this.config,
     required this.onPaymentResult,
     this.appleStyle,
+    this.onPressed,
   }) : assert(config.applePay != null,
             "Please add applePayConfig when instantiating the paymentConfig.");
 
   final PaymentConfig config;
   final Function onPaymentResult;
   final AppleStyle? appleStyle;
+  final VoidCallback? onPressed;
 
   void onApplePayError(error) {
     onPaymentResult(PaymentCanceledError());
@@ -68,6 +70,7 @@ class ApplePay extends StatelessWidget {
       style: ApplePayButtonStyle.white,
       //style: appleStyle?.applePayButtonStyle ?? ApplePayButtonStyle.black,
       onError: onApplePayError,
+      //onPressed: ,
       loadingIndicator: const Center(
         child: CircularProgressIndicator(),
       ),
