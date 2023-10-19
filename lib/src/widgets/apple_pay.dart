@@ -70,7 +70,7 @@ class ApplePay extends StatelessWidget {
       style: ApplePayButtonStyle.white,
       //style: appleStyle?.applePayButtonStyle ?? ApplePayButtonStyle.black,
       onError: onApplePayError,
-      //onPressed: ,
+      onPressed: onPressed,
       loadingIndicator: const Center(
         child: CircularProgressIndicator(),
       ),
