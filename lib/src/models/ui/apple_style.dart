@@ -1,5 +1,3 @@
-import 'package:pay/pay.dart' show ApplePayButtonStyle;
-
 class AppleStyle {
   final double? width;
   final double? height;

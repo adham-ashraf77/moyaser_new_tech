@@ -264,6 +264,16 @@ class _CreditCardState extends State<CreditCard> {
     );
   }
 
+  String _showAmount(int amount, Localization locale) {
+    final formattedAmount = (amount / 100).toStringAsFixed(2);
+
+    if (locale.languageCode == 'en') {
+      return '${locale.pay} $formattedAmount SAR';
+    }
+
+    return '${locale.pay} $formattedAmount ر.س';
+  }
+
   InputDecoration _buildInputDecoration({
     required String hintText,
     bool addNetworkIcons = false,
@@ -348,16 +358,6 @@ class CardFormField extends StatelessWidget {
       ),
     );
   }
-}
-
-String _showAmount(int amount, Localization locale) {
-  final formattedAmount = (amount / 100).toStringAsFixed(2);
-
-  if (locale.languageCode == 'en') {
-    return '${locale.pay} $formattedAmount SAR';
-  }
-
-  return '${locale.pay} $formattedAmount ر.س';
 }
 
 void closeKeyboard() => FocusManager.instance.primaryFocus?.unfocus();
