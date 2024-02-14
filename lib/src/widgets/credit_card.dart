@@ -15,6 +15,13 @@ import 'package:moyasar/src/widgets/network_icons.dart';
 import 'package:moyasar/src/widgets/three_d_s_webview.dart';
 
 import 'credit_button/credit_button.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:quickyclean/features/bookings/presentation/cubit/slots_bloc/slots_bloc.dart';
+import 'package:quickyclean/features/bookings/presentation/cubit/bookings_cubit.dart';
+import 'package:quickyclean/core/packages/quicky_toast.dart';
+import 'package:quickyclean/core/utils/app_assets.dart';
+import 'package:quickyclean/core/utils/app_extensions.dart';
+import 'package:quickyclean/core/utils/app_strings.dart';
 
 typedef ButtonBuilderCallBack = Widget Function(
   BuildContext context,
@@ -91,53 +98,138 @@ class _CreditCardState extends State<CreditCard> {
 
     _formKey.currentState?.save();
 
-    final source = CardPaymentRequestSource(
-      creditCardData: _cardData,
-      tokenizeCard: _tokenizeCard,
-      manualPayment: _manualPayment,
-    );
-    final paymentRequest = PaymentRequest(widget.config, source);
+    if (widget.config.description == "Buy a package and make order") {
+      SlotsBloc.of(context)
+          .add(SlotsFetch(date: BookingsCubit.of(context).selectedBookingDate));
 
-    setState(() => _isSubmitting = true);
+      await SlotsBloc.of(context)
+          .stream
+          .firstWhere((state) => state is SlotsLoaded || state is SlotsError);
 
-    final result = await Moyasar.pay(
-        apiKey: widget.config.publishableApiKey,
-        paymentRequest: paymentRequest);
+      try {
+        var x = SlotsBloc.of(context)
+            .slots
+            .firstWhere((element) =>
+                element.id == BookingsCubit.of(context).selectedSlot?.id &&
+                element.isActive == true)
+            .isNotNull;
+        print("**************");
+        print(x);
+        print("**************");
+        if (x == true) {
+          final source = CardPaymentRequestSource(
+            creditCardData: _cardData,
+            tokenizeCard: _tokenizeCard,
+            manualPayment: _manualPayment,
+          );
+          final paymentRequest = PaymentRequest(widget.config, source);
 
-    setState(() => _isSubmitting = false);
+          setState(() => _isSubmitting = true);
 
-    if (result is! PaymentResponse ||
-        result.status != PaymentStatus.initiated) {
-      widget.onPaymentResult(result);
-      return;
-    }
+          final result = await Moyasar.pay(
+              apiKey: widget.config.publishableApiKey,
+              paymentRequest: paymentRequest);
 
-    final String transactionUrl =
-        (result.source as CardPaymentResponseSource).transactionUrl;
+          setState(() => _isSubmitting = false);
 
-    if (mounted) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          fullscreenDialog: true,
-          maintainState: false,
-          builder: (context) => ThreeDSWebView(
-            transactionUrl: transactionUrl,
-            on3dsDone: (String status, String message) async {
-              if (status == PaymentStatus.paid.name) {
-                result.status = PaymentStatus.paid;
-              } else if (status == PaymentStatus.authorized.name) {
-                result.status = PaymentStatus.authorized;
-              } else {
-                result.status = PaymentStatus.failed;
-                (result.source as CardPaymentResponseSource).message = message;
-              }
-              Navigator.pop(context);
-              widget.onPaymentResult(result);
-            },
-          ),
-        ),
+          if (result is! PaymentResponse ||
+              result.status != PaymentStatus.initiated) {
+            widget.onPaymentResult(result);
+            return;
+          }
+
+          final String transactionUrl =
+              (result.source as CardPaymentResponseSource).transactionUrl;
+
+          if (mounted) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                fullscreenDialog: true,
+                maintainState: false,
+                builder: (context) => ThreeDSWebView(
+                  transactionUrl: transactionUrl,
+                  on3dsDone: (String status, String message) async {
+                    if (status == PaymentStatus.paid.name) {
+                      result.status = PaymentStatus.paid;
+                    } else if (status == PaymentStatus.authorized.name) {
+                      result.status = PaymentStatus.authorized;
+                    } else {
+                      result.status = PaymentStatus.failed;
+                      (result.source as CardPaymentResponseSource).message =
+                          message;
+                    }
+                    Navigator.pop(context);
+                    widget.onPaymentResult(result);
+                  },
+                ),
+              ),
+            );
+          }
+        } else {
+          DefaultToast.show(
+            icon: AppIcons.alarm,
+            title: AppStrings.timeOut.trans(),
+            subtitle: AppStrings.pleaseTryAgain.trans(),
+          );
+        }
+      } catch (e) {
+        DefaultToast.show(
+          icon: AppIcons.alarm,
+          title: AppStrings.timeOut.trans(),
+          subtitle: AppStrings.pleaseTryAgain.trans(),
+        );
+      }
+    } else {
+      final source = CardPaymentRequestSource(
+        creditCardData: _cardData,
+        tokenizeCard: _tokenizeCard,
+        manualPayment: _manualPayment,
       );
+      final paymentRequest = PaymentRequest(widget.config, source);
+
+      setState(() => _isSubmitting = true);
+
+      final result = await Moyasar.pay(
+          apiKey: widget.config.publishableApiKey,
+          paymentRequest: paymentRequest);
+
+      setState(() => _isSubmitting = false);
+
+      if (result is! PaymentResponse ||
+          result.status != PaymentStatus.initiated) {
+        widget.onPaymentResult(result);
+        return;
+      }
+
+      final String transactionUrl =
+          (result.source as CardPaymentResponseSource).transactionUrl;
+
+      if (mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            fullscreenDialog: true,
+            maintainState: false,
+            builder: (context) => ThreeDSWebView(
+              transactionUrl: transactionUrl,
+              on3dsDone: (String status, String message) async {
+                if (status == PaymentStatus.paid.name) {
+                  result.status = PaymentStatus.paid;
+                } else if (status == PaymentStatus.authorized.name) {
+                  result.status = PaymentStatus.authorized;
+                } else {
+                  result.status = PaymentStatus.failed;
+                  (result.source as CardPaymentResponseSource).message =
+                      message;
+                }
+                Navigator.pop(context);
+                widget.onPaymentResult(result);
+              },
+            ),
+          ),
+        );
+      }
     }
   }
 
