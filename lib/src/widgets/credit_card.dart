@@ -76,8 +76,14 @@ class _CreditCardState extends State<CreditCard> {
 
   bool _manualPayment = false;
 
+  late final BookingsCubit bookingCubit;
+
+  late final slotsBloc slotsBloc;
+
   @override
   void initState() {
+    bookingCubit = BookingsCubit.of(context);
+    slotsBloc = SlotsBloc.of(context);
     super.initState();
     setState(() {
       _tokenizeCard = widget.config.creditCard?.saveCard ?? false;
@@ -99,23 +105,22 @@ class _CreditCardState extends State<CreditCard> {
     _formKey.currentState?.save();
 
     if (widget.config.description == "Buy a package and make order") {
-      SlotsBloc.of(context)
-          .add(SlotsFetch(date: BookingsCubit.of(context).selectedBookingDate));
+      slotsBloc.add(SlotsFetch(date: bookingCubit.selectedBookingDate));
 
-      await SlotsBloc.of(context)
+      await slotsBloc
           .stream
           .firstWhere((state) => state is SlotsLoaded || state is SlotsError);
 
       try {
-        var x = SlotsBloc.of(context)
+        var x = slotsBloc
             .slots
             .firstWhere((element) =>
-                element.id == BookingsCubit.of(context).selectedSlot?.id &&
+                element.id == bookingCubit.selectedSlot?.id &&
                 element.isActive == true)
             .isNotNull;
-        print("**************");
-        print(x);
-        print("**************");
+        // print("**************");
+        // print(x);
+        // print("**************");
         if (x == true) {
           final source = CardPaymentRequestSource(
             creditCardData: _cardData,
