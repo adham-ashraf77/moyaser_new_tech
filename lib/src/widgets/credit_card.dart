@@ -78,7 +78,7 @@ class _CreditCardState extends State<CreditCard> {
 
   late final BookingsCubit bookingCubit;
 
-  late final slotsBloc slotsBloc;
+  late final SlotsBloc slotsBloc;
 
   @override
   void initState() {
