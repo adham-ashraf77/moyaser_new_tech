@@ -107,13 +107,11 @@ class _CreditCardState extends State<CreditCard> {
     if (widget.config.description == "Buy a package and make order") {
       slotsBloc.add(SlotsFetch(date: bookingCubit.selectedBookingDate));
 
-      await slotsBloc
-          .stream
+      await slotsBloc.stream
           .firstWhere((state) => state is SlotsLoaded || state is SlotsError);
 
       try {
-        var x = slotsBloc
-            .slots
+        var x = slotsBloc.slots
             .firstWhere((element) =>
                 element.id == bookingCubit.selectedSlot?.id &&
                 element.isActive == true)
@@ -174,15 +172,15 @@ class _CreditCardState extends State<CreditCard> {
         } else {
           DefaultToast.show(
             icon: AppIcons.alarm,
-            title: AppStrings.timeOut.trans(),
-            subtitle: AppStrings.pleaseTryAgain.trans(),
+            title: AppStrings.unavailableSlot.trans(),
+            subtitle: AppStrings.timeOutSlot.trans(),
           );
         }
       } catch (e) {
         DefaultToast.show(
           icon: AppIcons.alarm,
-          title: AppStrings.timeOut.trans(),
-          subtitle: AppStrings.pleaseTryAgain.trans(),
+          title: AppStrings.unavailableSlot.trans(),
+          subtitle: AppStrings.timeOutSlot.trans(),
         );
       }
     } else {
