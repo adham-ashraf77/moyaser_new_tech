@@ -18,6 +18,7 @@ import 'credit_button/credit_button.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quickyclean/features/bookings/presentation/cubit/slots_bloc/slots_bloc.dart';
 import 'package:quickyclean/features/bookings/presentation/cubit/bookings_cubit.dart';
+import 'package:quickyclean/features/bookings/presentation/cubit/bookings_cubit.dart';
 import 'package:quickyclean/core/packages/quicky_toast.dart';
 import 'package:quickyclean/core/utils/app_assets.dart';
 import 'package:quickyclean/core/utils/app_extensions.dart';
@@ -77,12 +78,14 @@ class _CreditCardState extends State<CreditCard> {
   bool _manualPayment = false;
 
   late final BookingsCubit bookingCubit;
+  late final AddressesCubit _addressesCubit;
 
   late final SlotsBloc slotsBloc;
 
   @override
   void initState() {
     bookingCubit = BookingsCubit.of(context);
+    _addressesCubit = AddressesCubit.of(context);
     slotsBloc = SlotsBloc.of(context);
     super.initState();
     setState(() {
@@ -105,7 +108,11 @@ class _CreditCardState extends State<CreditCard> {
     _formKey.currentState?.save();
 
     if (widget.config.description == "Buy a package and make order") {
-      slotsBloc.add(SlotsFetch(date: bookingCubit.selectedBookingDate));
+      slotsBloc.add(SlotsFetch(
+        date: bookingCubit.selectedBookingDate,
+        latitude: _addressesCubit.userFavoriteAddress?.latitude,
+        longitude: _addressesCubit.userFavoriteAddress?.longitude,
+      ));
 
       await slotsBloc.stream
           .firstWhere((state) => state is SlotsLoaded || state is SlotsError);
