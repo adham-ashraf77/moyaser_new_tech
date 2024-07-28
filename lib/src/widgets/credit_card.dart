@@ -18,7 +18,7 @@ import 'credit_button/credit_button.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quickyclean/features/bookings/presentation/cubit/slots_bloc/slots_bloc.dart';
 import 'package:quickyclean/features/bookings/presentation/cubit/bookings_cubit.dart';
-import 'package:quickyclean/features/bookings/presentation/cubit/bookings_cubit.dart';
+import 'package:quickyclean/features/map/presentation/cubit/addresses/addresses_cubit.dart';
 import 'package:quickyclean/core/packages/quicky_toast.dart';
 import 'package:quickyclean/core/utils/app_assets.dart';
 import 'package:quickyclean/core/utils/app_extensions.dart';
