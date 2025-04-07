@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:http/http.dart' as http;
 import 'package:moyasar/moyasar.dart';
@@ -19,6 +20,8 @@ class Moyasar {
         await http.post(Uri.parse(apiUrl), headers: headers, body: body);
 
     dynamic jsonBody = jsonDecode(res.body);
+
+    log(res.body.toString());
 
     if (res.statusCode.toString().startsWith('4')) {
       String errorType = jsonBody['type'];
