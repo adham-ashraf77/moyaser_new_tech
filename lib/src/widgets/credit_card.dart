@@ -16,13 +16,13 @@ import 'package:moyasar/src/widgets/three_d_s_webview.dart';
 
 import 'credit_button/credit_button.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:quickyclean/features/bookings/presentation/cubit/slots_bloc/slots_bloc.dart';
-import 'package:quickyclean/features/bookings/presentation/cubit/bookings_cubit.dart';
-import 'package:quickyclean/features/map/presentation/cubit/addresses/addresses_cubit.dart';
-import 'package:quickyclean/core/packages/quicky_toast.dart';
-import 'package:quickyclean/core/utils/app_assets.dart';
-import 'package:quickyclean/core/utils/app_extensions.dart';
-import 'package:quickyclean/core/utils/app_strings.dart';
+import 'package:quicky_technology_app/features/bookings/presentation/cubit/slots_bloc/slots_bloc.dart';
+import 'package:quicky_technology_app/features/bookings/presentation/cubit/bookings_cubit.dart';
+import 'package:quicky_technology_app/features/map/presentation/cubit/addresses/addresses_cubit.dart';
+import 'package:quicky_technology_app/core/packages/quicky_toast.dart';
+import 'package:quicky_technology_app/core/utils/app_assets.dart';
+import 'package:quicky_technology_app/core/utils/app_extensions.dart';
+import 'package:quicky_technology_app/core/utils/app_strings.dart';
 
 typedef ButtonBuilderCallBack = Widget Function(
   BuildContext context,
