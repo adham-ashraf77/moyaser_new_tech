@@ -59,7 +59,7 @@ class ApplePay extends StatelessWidget {
           PaymentConfiguration.fromJsonString(createConfigString()),
       paymentItems: [
         PaymentItem(
-          label: config.applePay?.label,
+          label: config.applePay!.label,
           amount: (config.amount / 100).toStringAsFixed(2),
         )
       ],
