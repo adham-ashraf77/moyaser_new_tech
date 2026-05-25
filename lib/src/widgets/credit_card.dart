@@ -24,12 +24,13 @@ import 'package:quicky_technology_app/core/utils/app_assets.dart';
 import 'package:quicky_technology_app/core/utils/app_extensions.dart';
 import 'package:quicky_technology_app/core/utils/app_strings.dart';
 
-typedef ButtonBuilderCallBack = Widget Function(
-  BuildContext context,
-  String payAmount,
-  bool isLoading,
-  VoidCallback onPressed,
-);
+typedef ButtonBuilderCallBack =
+    Widget Function(
+      BuildContext context,
+      String payAmount,
+      bool isLoading,
+      VoidCallback onPressed,
+    );
 
 /// The widget that shows the Credit Card form and manages the 3DS step.
 class CreditCard extends StatefulWidget {
@@ -108,20 +109,38 @@ class _CreditCardState extends State<CreditCard> {
     _formKey.currentState?.save();
 
     if (widget.config.description == "Buy a package and make order") {
-      slotsBloc.add(SlotsFetch(
-        date: bookingCubit.selectedBookingDate,
-        latitude: _addressesCubit.userFavoriteAddress?.latitude,
-        longitude: _addressesCubit.userFavoriteAddress?.longitude,
-      ));
+      // slotsBloc.add(SlotsFetch(
+      //   date: bookingCubit.selectedBookingDate,
+      //   latitude: _addressesCubit.userFavoriteAddress?.latitude,
+      //   longitude: _addressesCubit.userFavoriteAddress?.longitude,
+      // ));
 
-      await slotsBloc.stream
-          .firstWhere((state) => state is SlotsLoaded || state is SlotsError);
+      slotsBloc.add(
+        SlotsFetch(
+          date: bookingCubit.selectedBookingDate,
+          latitude: bookingCubit.visitType == 'Branch'
+              ? null
+              : _addressesCubit.userFavoriteAddress?.latitude,
+          longitude: bookingCubit.visitType == 'Branch'
+              ? null
+              : _addressesCubit.userFavoriteAddress?.longitude,
+          branchId: bookingCubit.visitType == 'Branch'
+              ? bookingCubit.selectedBranch?.id
+              : null,
+        ),
+      );
+
+      await slotsBloc.stream.firstWhere(
+        (state) => state is SlotsLoaded || state is SlotsError,
+      );
 
       try {
         var x = slotsBloc.slots
-            .firstWhere((element) =>
-                element.id == bookingCubit.selectedSlot?.id &&
-                element.isActive == true)
+            .firstWhere(
+              (element) =>
+                  element.id == bookingCubit.selectedSlot?.id &&
+                  element.isActive == true,
+            )
             .isNotNull;
         // print("**************");
         // print(x);
@@ -137,8 +156,9 @@ class _CreditCardState extends State<CreditCard> {
           setState(() => _isSubmitting = true);
 
           final result = await Moyasar.pay(
-              apiKey: widget.config.publishableApiKey,
-              paymentRequest: paymentRequest);
+            apiKey: widget.config.publishableApiKey,
+            paymentRequest: paymentRequest,
+          );
 
           setState(() => _isSubmitting = false);
 
@@ -201,8 +221,9 @@ class _CreditCardState extends State<CreditCard> {
       setState(() => _isSubmitting = true);
 
       final result = await Moyasar.pay(
-          apiKey: widget.config.publishableApiKey,
-          paymentRequest: paymentRequest);
+        apiKey: widget.config.publishableApiKey,
+        paymentRequest: paymentRequest,
+      );
 
       setState(() => _isSubmitting = false);
 
@@ -251,10 +272,9 @@ class _CreditCardState extends State<CreditCard> {
       child: Column(
         children: [
           CardFormField(
-            inputDecoration: widget.nameOnCardDecoration ??
-                _buildInputDecoration(
-                  hintText: widget.locale.nameOnCard,
-                ),
+            inputDecoration:
+                widget.nameOnCardDecoration ??
+                _buildInputDecoration(hintText: widget.locale.nameOnCard),
             keyboardType: TextInputType.text,
             validator: (String? input) =>
                 CardUtils.validateName(input, widget.locale),
@@ -264,7 +284,8 @@ class _CreditCardState extends State<CreditCard> {
             ],
           ),
           CardFormField(
-            inputDecoration: widget.cardNumberDecoration ??
+            inputDecoration:
+                widget.cardNumberDecoration ??
                 _buildInputDecoration(
                   hintText: widget.locale.cardNumber,
                   addNetworkIcons: true,
@@ -289,7 +310,8 @@ class _CreditCardState extends State<CreditCard> {
                     if (widget.expiryLabelWidget != null)
                       widget.expiryLabelWidget!,
                     CardFormField(
-                      inputDecoration: widget.expiryDecoration ??
+                      inputDecoration:
+                          widget.expiryDecoration ??
                           _buildInputDecoration(
                             hintText: '${widget.locale.expiry} (MM / YY)',
                           ),
@@ -301,8 +323,9 @@ class _CreditCardState extends State<CreditCard> {
                       validator: (String? input) =>
                           CardUtils.validateDate(input, widget.locale),
                       onSaved: (value) {
-                        List<String> expireDate =
-                            CardUtils.getExpiryDate(value!);
+                        List<String> expireDate = CardUtils.getExpiryDate(
+                          value!,
+                        );
                         _cardData.month = expireDate.first;
                         _cardData.year = expireDate[1];
                       },
@@ -310,19 +333,16 @@ class _CreditCardState extends State<CreditCard> {
                   ],
                 ),
               ),
-              const SizedBox(
-                width: 16.0,
-              ),
+              const SizedBox(width: 16.0),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     if (widget.cvcLabelWidget != null) widget.cvcLabelWidget!,
                     CardFormField(
-                      inputDecoration: widget.cvcDecoration ??
-                          _buildInputDecoration(
-                            hintText: widget.locale.cvc,
-                          ),
+                      inputDecoration:
+                          widget.cvcDecoration ??
+                          _buildInputDecoration(hintText: widget.locale.cvc),
                       inputFormatters: [
                         FilteringTextInputFormatter.digitsOnly,
                         LengthLimitingTextInputFormatter(4),
@@ -343,7 +363,8 @@ class _CreditCardState extends State<CreditCard> {
                     context,
                     _showAmount(widget.config.amount, widget.locale),
                     _isSubmitting,
-                    _saveForm)
+                    _saveForm,
+                  )
                 : SizedBox(
                     child: CreditCardButton(
                       buttonStyle: widget.creditButtonStyle,
@@ -360,7 +381,7 @@ class _CreditCardState extends State<CreditCard> {
                     ),
                   ),
           ),
-          SaveCardNotice(tokenizeCard: _tokenizeCard, locale: widget.locale)
+          SaveCardNotice(tokenizeCard: _tokenizeCard, locale: widget.locale),
         ],
       ),
     );
@@ -411,19 +432,12 @@ class SaveCardNotice extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Icon(
-                  Icons.info,
-                  color: blueColor,
-                ),
-                const Padding(
-                  padding: EdgeInsets.only(right: 5),
-                ),
-                Text(
-                  locale.saveCardNotice,
-                  style: TextStyle(color: blueColor),
-                ),
+                Icon(Icons.info, color: blueColor),
+                const Padding(padding: EdgeInsets.only(right: 5)),
+                Text(locale.saveCardNotice, style: TextStyle(color: blueColor)),
               ],
-            ))
+            ),
+          )
         : const SizedBox.shrink();
   }
 }
@@ -467,15 +481,18 @@ void closeKeyboard() => FocusManager.instance.primaryFocus?.unfocus();
 BorderRadius defaultBorderRadius = const BorderRadius.all(Radius.circular(8));
 
 OutlineInputBorder defaultEnabledBorder = OutlineInputBorder(
-    borderSide: BorderSide(color: Colors.grey[400]!),
-    borderRadius: defaultBorderRadius);
+  borderSide: BorderSide(color: Colors.grey[400]!),
+  borderRadius: defaultBorderRadius,
+);
 
 OutlineInputBorder defaultFocusedBorder = OutlineInputBorder(
-    borderSide: BorderSide(color: Colors.grey[600]!),
-    borderRadius: defaultBorderRadius);
+  borderSide: BorderSide(color: Colors.grey[600]!),
+  borderRadius: defaultBorderRadius,
+);
 
 OutlineInputBorder defaultErrorBorder = OutlineInputBorder(
-    borderSide: const BorderSide(color: Colors.red),
-    borderRadius: defaultBorderRadius);
+  borderSide: const BorderSide(color: Colors.red),
+  borderRadius: defaultBorderRadius,
+);
 
 Color blueColor = Colors.blue[700]!;
